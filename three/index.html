@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>Document</title>
+<script type="text/javascript" src="three.min.js"></script>
+<style>
+    #world {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: linear-gradient(#e4e0ba, #f7d9aa);
+    }
+</style>
+<script src="jquery-1.12.4.min.js"></script>
+</head>
+<body>
+    <canvas id="mainCanvas" width="600px" height="450px" ></canvas>
+    <div id="world"></div>
+    <input type="button" value="x-1" id="btnx"/>
+    <input type="button" value="y-1" id="btny"/>
+    <input type="button" value="z-1" id="btnz"/>
+</body>
+<script>
+    //---------创建渲染器
+    var renderer;
+    function createRenderer(){
+        renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('mainCanvas')});//然后创建渲染器时绑定此元素
+        renderer.setClearColor("#e2d79d"); // 设置渲染器背景为黑色
+    }
+    
+   //---------建场景
+    var scene;
+    function createScene () {
+        scene = new THREE.Scene();
+    }
+
+   //---------创建照相机
+    var camera;
+    function createCamera () {
+        camera = new THREE.OrthographicCamera(-6, 6, 4.5, -4.5, 0, 50); //创建照相机
+       // camera.position.set(35, 15, 25); //设置照相机的位置
+        camera.position.set(4, 2, 20); //设置照相机的位置
+        //camera.lookAt(new THREE.Vector3(0, 0, 0)); //设置照相机面向(0,0,0)坐标观察 
+        camera.lookAt(new THREE.Vector3(0, 0, 0)); //设置照相机面向(0,0,0)坐标观察 
+       // camera.lookAt(scene.position); 
+    }
+    
+
+    //--------创建光源
+   /*var light = new THREE.PointLight(0xffffff, 3, 100); //创建光源
+    light.position.set(12, 15, 10); //设置光源的位置
+    scene.add(light); //在场景中添加光源*/
+    var ambientLight, hemisphereLight, shadowLight;
+    function createLights() {
+        hemisphereLight = new THREE.HemisphereLight(0xaaaaaa,0x000000, .9)
+        shadowLight = new THREE.DirectionalLight(0xffffff, .9);
+        shadowLight.position.set(150, 350, 350);
+        shadowLight.castShadow = true;
+        shadowLight.shadow.camera.left = -400;
+        shadowLight.shadow.camera.right = 400;
+        shadowLight.shadow.camera.top = 400;
+        shadowLight.shadow.camera.bottom = -400;
+        shadowLight.shadow.camera.near = 1;
+        shadowLight.shadow.camera.far = 1000;
+        shadowLight.shadow.mapSize.width = 2048;
+        shadowLight.shadow.mapSize.height = 2048;
+        scene.add(hemisphereLight);
+        scene.add(shadowLight);  
+    }
+    
+     
+    //--------创建物体  
+    // var cube;
+    // function createCube(){
+    //     var geometry = new THREE.BoxGeometry (1, 5, 1); //设置正方体宽度，高度，深度分别为5,5,5
+    //     var material = new THREE.MeshPhongMaterial({  color: "#9cc3d0" });//设置颜色为yellow  
+    //     cube = new THREE.Mesh(geometry, material);//创建物体
+    //     scene.add(cube);
+    // }
+    
+    function mT(){
+        this.mesh = new THREE.Object3D();
+
+        var geometry = new THREE.BoxGeometry (0.6, 5, 1); //设置正方体宽度，高度，深度分别为5,5,5
+        var material = new THREE.MeshPhongMaterial({  color: "#9cc3d0" });//设置颜色为yellow  
+        var cube = new THREE.Mesh(geometry, material);//创建物体
+        cube.castShadow = true;
+        cube.receiveShadow = true;
+        this.mesh.add(cube);
+
+        var geomEngine = new THREE.BoxGeometry(1, 1, 4);
+        var matEngine = new THREE.MeshPhongMaterial({color:"#9cc3d0"});
+        var engine = new THREE.Mesh(geomEngine, matEngine);
+        engine.position.y = 2;
+        engine.castShadow = true;
+        engine.receiveShadow = true;
+        this.mesh.add(engine);
+
+        var geomIce = new THREE.BoxGeometry(0.1, 0.3, 0.3);
+        var matIce = new THREE.MeshPhongMaterial({color:"#ffffff"});
+        var ice = new THREE.Mesh(geomIce, matIce);
+        ice.position.x = -0.5;//相对于正面的左右
+        ice.position.y = 2.2;//纵 上下
+        ice.position.z = 1.2;//相对于正面的前后
+        ice.castShadow = true;
+        ice.receiveShadow = true;
+        this.mesh.add(ice);
+
+        var geomZhu = new THREE.BoxGeometry(0.15, 0.1, 0.1);
+        var matZhu = new THREE.MeshPhongMaterial({color:"#000000"});
+        var zhu = new THREE.Mesh(geomZhu, matZhu);
+        zhu.position.x = -0.5;//相对于正面的左右
+        zhu.position.y = 2.2;//纵 上下
+        zhu.position.z = 1.2;//相对于正面的前后
+        zhu.castShadow = true;
+        zhu.receiveShadow = true;
+        this.mesh.add(zhu);
+
+        var geomIce2 = new THREE.BoxGeometry(0.1, 0.3, 0.3);
+        var matIce2 = new THREE.MeshPhongMaterial({color:"#ffffff"});
+        var ice2 = new THREE.Mesh(geomIce2, matIce2);
+        ice2.position.x = 0.5;//相对于正面的左右
+        ice2.position.y = 2.2;//纵 上下
+        ice2.position.z = 1.2;//相对于正面的前后
+        ice2.castShadow = true;
+        ice2.receiveShadow = true;
+        this.mesh.add(ice2);
+
+        var geomZhu2 = new THREE.BoxGeometry(0.15, 0.1, 0.1);
+        var matZhu2 = new THREE.MeshPhongMaterial({color:"#000000"});
+        var zhu2 = new THREE.Mesh(geomZhu2, matZhu2);
+        zhu2.position.x = 0.5;//相对于正面的左右
+        zhu2.position.y = 2.2;//纵 上下
+        zhu2.position.z = 1.2;//相对于正面的前后
+        zhu2.castShadow = true;
+        zhu2.receiveShadow = true;
+        this.mesh.add(zhu2);
+
+        // var geomDian = new THREE.BoxGeometry(0.6, 0.3, 0.05);
+        // var matDian = new THREE.MeshPhongMaterial({color:"#ffffff"});
+        // var dian = new THREE.Mesh(geomDian, matDian);
+        // dian.position.x = 0;//相对于正面的左右
+        // dian.position.y = 1.8;//纵 上下
+        // dian.position.z = 2;//相对于正面的前后
+        // dian.castShadow = true;
+        // dian.receiveShadow = true;
+        // this.mesh.add(dian);
+
+        var geomDian = new THREE.BoxGeometry(0.2, 0.2, 0.05);
+        var matDian = new THREE.MeshPhongMaterial({color:"#000000"});
+        var dian = new THREE.Mesh(geomDian, matDian);
+        dian.position.x = 0;//相对于正面的左右
+        dian.position.y = 1.8;//纵 上下
+        dian.position.z = 2;//相对于正面的前后
+        dian.castShadow = true;
+        dian.receiveShadow = true;
+        this.mesh.add(dian);
+
+        // var geomDian2 = new THREE.BoxGeometry(0.05, 0.3, 0.05);
+        // var matDian2 = new THREE.MeshPhongMaterial({color:"#000000"});
+        // var dian2 = new THREE.Mesh(geomDian2, matDian2);
+        // dian2.position.x = -0.19;//相对于正面的左右
+        // dian2.position.y = 1.8;//纵 上下
+        // dian2.position.z = 2.01;//相对于正面的前后
+        // dian2.castShadow = true;
+        // dian2.receiveShadow = true;
+        // this.mesh.add(dian2);
+        
+        // var geomDian3 = new THREE.BoxGeometry(0.05, 0.3, 0.05);
+        // var matDian3 = new THREE.MeshPhongMaterial({color:"#000000"});
+        // var dian3 = new THREE.Mesh(geomDian3, matDian3);
+        // dian3.position.x = 0.19;//相对于正面的左右
+        // dian3.position.y = 1.8;//纵 上下
+        // dian3.position.z = 2.01;//相对于正面的前后
+        // dian3.castShadow = true;
+        // dian3.receiveShadow = true;
+        // this.mesh.add(dian3);
+
+        // var geomDian4 = new THREE.BoxGeometry(0.04, 0.3, 0.05);
+        // var matDian4 = new THREE.MeshPhongMaterial({color:"#000000"});
+        // var dian4 = new THREE.Mesh(geomDian4, matDian4);
+        // dian4.position.x = 0;//相对于正面的左右
+        // dian4.position.y = 1.8;//纵 上下
+        // dian4.position.z = 2.01;//相对于正面的前后
+        // dian4.castShadow = true;
+        // dian4.receiveShadow = true;
+        // this.mesh.add(dian4);
+    }
+    var mt;
+    function createCube(){
+        mt=new mT();
+        //mt.mesh.scale.set(.25,.25,.25);
+        //mt.mesh.position.y = 100;
+        mt.mesh.rotation.y = 0.1;
+        scene.add(mt.mesh);
+    }
+    
+
+    //--------渲染画布
+   // scene.add(light);//将光源和物体加入场景中：
+    //createLights();  
+    //renderer.render(scene, camera);//再使用渲染器将 场景 和 照相机 渲染出来：
+    function animation()
+    {
+        //cube.position.x+=1;
+        mt.mesh.rotation.y -= 0.1;
+        renderer.render(scene, camera);
+        //requestAnimationFrame(animation);
+    }
+    function animation2()
+    {
+        //cube.position.x-=1;
+        //cube.position.z-=1;
+        //cube.rotation.y += 0.1;
+        mt.mesh.rotation.y += 0.1;
+        renderer.render(scene, camera);
+       // requestAnimationFrame(animation);
+    }
+
+/*
+    var mousePos={x:0, y:0};
+ 
+    // 现在处理mousemove事件
+    function handleMouseMove(event) {
+        // here we are converting the mouse position value received  这里我们将鼠标位置值
+        // to a normalized value varying between -1 and 1; 1和1之间的归一化值不同
+        // this is the formula for the horizontal axis:　　/ /这是水平轴的公式    
+        var tx = -1 + (event.clientX / 600)*2;
+  
+        // for the vertical axis, we need to inverse the formula  为纵轴,我们需要逆公式
+        // because the 2D y-axis goes the opposite direction of the 3D y-axis 因为2 d轴3 d轴的方向相反       
+        var ty = 1 - (event.clientY / 450)*2;
+        mousePos = {x:tx, y:ty};
+    }
+    function loop(){
+        updatePlane();
+        //sea.mesh.rotation.z += .005;
+        //sky.mesh.rotation.z += .01;
+        renderer.render(scene, camera);
+        requestAnimationFrame(loop);
+    }
+
+    function updatePlane(){
+        var targetY = normalize(mousePos.y,-.75,.75,25, 175);
+        var targetX = normalize(mousePos.x,-.75,.75,-100, 100);
+        //cube.position.y = targetY;
+        //cube.position.x = targetX;
+        //cube.rotation.x += 0.3;
+    }
+
+    function normalize(v,vmin,vmax,tmin, tmax){
+        var nv = Math.max(Math.min(v,vmax), vmin);
+        var dv = vmax-vmin;
+        var pc = (nv-vmin)/dv;
+        var dt = tmax-tmin;
+        var tv = tmin + (pc*dt);
+        return tv;
+    }*/
+
+    //我们需要创建的所有主要函数都放在init函数中：
+    function init(event){
+        //handleWindowResize();
+       // document.addEventListener('mousemove', handleMouseMove, false);
+        createRenderer()
+        createScene();
+        createCamera();
+        createLights();
+        createCube();
+        //loop();
+        animation2();
+        document.addEventListener( 'mousedown', onMouseDown, false );
+         document.addEventListener( 'mouseup', onMouseup, false );
+    }
+    
+    init(event);
+    $("#btnx").click(function(){
+        animation2();
+    });
+    $("#btny").click(function(){
+        animation();
+    });
+
+    var rotateStart;
+    rotateStart = new THREE.Vector2();
+
+    /*
+        鼠标移动控制模型旋转思想：
+        当按下鼠标时及时当前鼠标的水平坐标clientX1，在鼠标移动的过程中不断触发onMouseMove事件，
+        不停的记录鼠标的当前坐标clientX2，由当前坐标减去记录的上一个水平坐标，
+        并且将当前的坐标付给上一个坐标clientX1，计算两个坐标的之间的差clientX2-clientX1，
+        将得到的差值除以一个常量（这个常量可以根据自己的需要调整），得到旋转的角度
+    */
+
+    function onMouseDown(event){
+        event.preventDefault();
+        mouseDown = true;
+        mouseX = event.clientX;//出发事件时的鼠标指针的水平坐标
+        
+        rotateStart.set( event.clientX, event.clientY );
+        document.addEventListener( 'mousemove', onMouseMove2, false );
+    }
+
+    function onMouseup(event){      
+        mouseDown = false;
+
+        document.removeEventListener("mousemove", onMouseMove2);
+    }
+
+    function onMouseMove2(event){
+        if(!mouseDown){
+            return;
+        }       
+        var deltaX = event.clientX - mouseX;
+        mouseX = event.clientX;
+        rotateScene(deltaX);        
+    }
+
+    //设置模型旋转速度，可以根据自己的需要调整
+    function rotateScene(deltaX){
+        //设置旋转方向和移动方向相反，所以加了个负号
+        var deg = deltaX/279;
+        console.log(deg)
+        
+        //deg 设置模型旋转的弧度
+        mt.mesh.rotation.y += deg;
+        render();
+    }
+
+    function render() {
+       renderer.render(scene, camera);  
+    }
+</script>
+</html>
